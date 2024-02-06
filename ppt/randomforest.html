@@ -9,7 +9,7 @@
 
 
 
-  <meta name="date" content="2023-12-18" />
+  <meta name="date" content="2024-02-05" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3140,7 +3140,7 @@ ul.task-list{list-style: none;}
       <h1 data-config-title><!-- populated from slide_config.json --></h1>
       
       <p data-config-presenter><!-- populated from slide_config.json --></p>
-            <p style="margin-top: 6px; margin-left: -2px;">2023-12-18</p>
+            <p style="margin-top: 6px; margin-left: -2px;">2024-02-05</p>
           </hgroup>
   </slide>
 
@@ -3198,7 +3198,10 @@ ul.task-list{list-style: none;}
 <li>Cons
 
 <ul>
-<li>Higly correlated trees. Bagging builds trees based on the same set of predictors, few strong predictors will be repeatedly selected. This leads to generating similar trees that produce highly correlated predictions. One problem with correlated predictions is that taking the average of those does not decrease variance as expected.</li>
+<li>Higly correlated trees.</li>
+<li>Bagging builds trees based on the same set of predictors, few strong predictors will be repeatedly selected.</li>
+<li>This leads to generating similar trees that produce highly correlated predictions.</li>
+<li>One problem with correlated predictions is that taking the average of those does not decrease variance as expected.</li>
 </ul></li>
 </ul>
 
@@ -3279,66 +3282,7 @@ ul.task-list{list-style: none;}
 <ul>
 <li><p>Random forests <em>cannot overfit</em> data with regards to to the number of trees.</p></li>
 <li><p>The number of trees does not mean increase in the flexibility of the model</p></li>
-</ul>
-
-<!------------------------  ----------------------->
-
-</article></slide><slide class="segue dark nobackground level1"><hgroup class = 'auto-fadein'><h2>Boosting</h2></hgroup><article  id="boosting">
-
-<!------------------------  ----------------------->
-
-</article></slide><slide class=""><hgroup><h2>Recap</h2></hgroup><article  id="recap">
-
-<ul>
-<li><p>Boosting is a general approach that can be applied to many statistical learning methods for regression or classification.</p></li>
-<li><p>Bagging: Generate multiple trees from bootstrapped data and average the trees. Bagging results in i.d. trees and not i.i.d.</p></li>
-</ul>
-
-<p>Random Forest produces i.i.d trees by randomly selecting a subset of predictors at each step</p>
-
-</article></slide><slide class=""><hgroup><h2>Boosting</h2></hgroup><article  id="boosting-1">
-
-<ul>
-<li><p>Boosting works very differently</p></li>
-<li><p>Boosting does not involve bootstrap sampling</p></li>
-<li><p>Trees are grown <strong>sequentially</strong>:</p></li>
-<li><p>Each tree is grown using information from previously grown trees</p></li>
-<li><p>Like bagging, boosting involves combining a large number of decision trees</p></li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2>Sequential fitting</h2></hgroup><article  id="sequential-fitting">
-
-<ul>
-<li><p>Given a tree model, we fit a decision tree to the residuals from the model. Response variable now is the residuals and not Y</p></li>
-<li><p>We then add this new decision tree into the fitted function in order to update the residuals</p></li>
-<li><p>The learning rate has to be controlled in order to avoid over fitting</p></li>
-</ul>
-
-</article></slide><slide class=""><hgroup><h2>Sequential fitting Example</h2></hgroup><article  id="sequential-fitting-example">
-
-<p>Assume we have a simple model \(M\) with acciracy \(A_M\) so that:</p>
-
-<p>\[ y = M(x) + \epsilon_M \]</p>
-
-<p>Assuming that \(\epsilon_M\) is noy simple white noise but has some correlation with \(y\), we can develope a model like:</p>
-
-<p>\[ \epsilon_M = G(x) + \epsilon_G \] that may has have better accuracy \(A_G\) where \(A_G \ge A_M\)</p>
-
-<p>walking by : \[ \epsilon_G = H(x) + \epsilon_H \] that may has have better accuracy \(A_H\) where \(A_H \ge A_G\)</p>
-
-</article></slide><slide class=""><hgroup><h2>Sequential fitting Example</h2></hgroup><article  id="sequential-fitting-example-1">
-
-<p>After fitting \(M\), \(G\) amd \(H\) we can combine them together:</p>
-
-<p>\[y = M(x) + G(x) + H(x) + \epsilon_h\] The newly created model may even have better accuracy that \(A_H\).</p>
-
-<p>That we can further improve if we can find a <em>optimal</em> combination of parameters: \([\alpha, \beta ,\gamma]\) so that:</p>
-
-<p>\[y = \alpha M(x) + \beta G(x) + \gamma H(x) + \epsilon\]</p>
-
-<p>Boosting is generally made on <em>weak leanrnes</em>. that do not have the ability to return white noise residuals</p>
-
-<p>Boosting can easily lead to overfitting. A stop rule is strongly required</p></article></slide>
+</ul></article></slide>
 
 
   <slide class="backdrop"></slide>

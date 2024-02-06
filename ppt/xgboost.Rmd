@@ -58,23 +58,20 @@ knitr::opts_chunk$set(echo = FALSE)
   * Easy to paralelize
   
 * Cons
-  * Higly correlated trees. 
-  * Bagging builds trees based on the same set of predictors, few strong predictors will be repeatedly selected. 
-  * This leads to generating similar trees that produce highly correlated predictions. 
-  * One problem with correlated predictions is that taking the average of those does not decrease variance as expected.
+  * Higly correlated trees. Bagging builds trees based on the same set of predictors, few strong predictors will be repeatedly selected. This leads to generating similar trees that produce highly correlated predictions. One problem with correlated predictions is that taking the average of those does not decrease variance as expected.
 
 <!------------------------  ----------------------->
 
 ## Bagging 
 
-* An average of $N$ i.i.d random variables, each with variance $\sigma^2$, has variance: $\frac{\sigma^2}{N}$
+* An average of $B$ i.i.d random variables, each with variance $\sigma^2$, has variance: $\frac{\sigma^2}{B}$
 
-* In case of $N$ i.d., identical but not independent, with $\rho$ pair correlation, then the variance is:
+* In case of $B$ i.d., identical but not independent, with $\rho$ pair correlation, then the variance is:
 
-$$ \rho\sigma^2 + \frac{1-\rho}{N}\sigma^2$$
+$$ \rho\sigma^2 + \frac{1-\rho}{B}\sigma^2$$
 
 
-* As $N$ increases the second term disappears but the first term remains
+* As $B$ increases the second term disappears but the first term remains
 
 <!------------------------  ----------------------->
 
@@ -142,80 +139,77 @@ $$ \rho\sigma^2 + \frac{1-\rho}{N}\sigma^2$$
 
 * The number of trees does not mean increase in the flexibility of the model 
 
-
+<!------------------------  ----------------------->
+# Boosting
 <!------------------------  ----------------------->
 
-## randomForest
+## Recap 
 
-RandomForest in R is implemented via function `randomForest()` of the homonymous package
+* Boosting is a general approach that can be applied to many statistical learning methods for regression or classification.
+
+* Bagging: Generate multiple trees from bootstrapped data and average the trees.
+Bagging results in i.d. trees and not i.i.d. 
+
+Random Forest produces i.i.d trees by randomly selecting a subset of predictors at each step
+
+## Boosting 
+
+* Boosting works very differently 
+
+* Boosting does not involve bootstrap sampling
+
+* Trees are grown __sequentially__: 
+
+* Each tree is grown using information from previously grown trees
+
+* Like bagging, boosting involves combining a	large number of decision trees
+
+## Sequential fitting
+
+* Given a tree model, we fit a decision tree to the residuals from the model. Response variable now is the residuals and not Y
+
+* We then add this new decision tree into the fitted function in order to update the residuals
+
+* The learning rate has to be controlled in order to avoid over fitting 
+
+## Sequential fitting Example
+
+Assume we have a simple model $M$ with acciracy $A_M$ so that:
+
+$$ y = M(x) + \epsilon_M $$
+
+Assuming that $\epsilon_M$ is noy simple white noise but has some correlation with $y$, 
+we can develope a model like:
+
+$$ \epsilon_M = G(x) + \epsilon_G $$
+that may has have better accuracy $A_G$ where $A_G \ge A_M$
+
+walking by :
+$$ \epsilon_G = H(x) + \epsilon_H $$
+that may has have better accuracy $A_H$ where $A_H \ge A_G$
+
+## Sequential fitting Example
+
+After fitting $M$, $G$ amd $H$ we can combine them together:
+
+$$y = M(x) + G(x) + H(x) + \epsilon_h$$
+The newly created model may even have better accuracy that $A_H$.
+
+That we can further improve if we can find a _optimal_ combination of parameters: $[\alpha, \beta ,\gamma]$ so that:
+
+$$y = \alpha M(x) + \beta G(x) + \gamma H(x) + \epsilon$$
+
+Boosting is generally made on _weak leanrnes_. that do not have the ability to return white noise residuals
+
+Boosting can easily lead to overfitting. A stop rule is strongly required 
 
 
 
-xtest	
-a data frame or matrix (like x) containing predictors for the test set.
-
-ytest	
-response for the test set.
-
-* `ntree (m)`: Number of trees to grow. This should not be set to too small a number, to ensure that every input row gets predicted at least a few times.
 
 
-mtry	
-Number of variables randomly sampled as candidates at each split. Note that the default values are different for classification (sqrt(p) where p is number of variables in x) and regression (p/3)
 
-weights	
-A vector of length same as y that are positive weights used only in sampling data to grow each tree (not used in any other calculation)
 
-replace	
-Should sampling of cases be done with or without replacement?
 
-classwt	
-Priors of the classes. Need not add up to one. Ignored for regression.
 
-cutoff	
-(Classification only) A vector of length equal to number of classes. The ‘winning’ class for an observation is the one with the maximum ratio of proportion of votes to cutoff. Default is 1/k where k is the number of classes (i.e., majority vote wins).
 
-strata	
-A (factor) variable that is used for stratified sampling.
 
-sampsize	
-Size(s) of sample to draw. For classification, if sampsize is a vector of the length the number of strata, then sampling is stratified by strata, and the elements of sampsize indicate the numbers to be drawn from the strata.
-
-nodesize	
-Minimum size of terminal nodes. Setting this number larger causes smaller trees to be grown (and thus take less time). Note that the default values are different for classification (1) and regression (5).
-
-maxnodes	
-Maximum number of terminal nodes trees in the forest can have. If not given, trees are grown to the maximum possible (subject to limits by nodesize). If set larger than maximum possible, a warning is issued.
-
-importance	
-Should importance of predictors be assessed?
-
-localImp	
-Should casewise importance measure be computed? (Setting this to TRUE will override importance.)
-
-nPerm	
-Number of times the OOB data are permuted per tree for assessing variable importance. Number larger than 1 gives slightly more stable estimate, but not very effective. Currently only implemented for regression.
-
-proximity	
-Should proximity measure among the rows be calculated?
-
-oob.prox	
-Should proximity be calculated only on “out-of-bag” data?
-
-norm.votes	
-If TRUE (default), the final result of votes are expressed as fractions. If FALSE, raw vote counts are returned (useful for combining results from different runs). Ignored for regression.
-
-do.trace	
-If set to TRUE, give a more verbose output as randomForest is run. If set to some integer, then running output is printed for every do.trace trees.
-
-keep.forest	
-If set to FALSE, the forest will not be retained in the output object. If xtest is given, defaults to FALSE.
-
-corr.bias	
-perform bias correction for regression? Note: Experimental. Use at your own risk.
-
-keep.inbag	
-Should an n by ntree matrix be returned that keeps track of which samples are “in-bag” in which trees (but not how many times, if sampling with replacement)
-
-...	
-optional parameters to be passed to the low level function randomForest.default.
