@@ -1,0 +1,168 @@
+---
+title: "tree toy"
+author: "Andrea Spano'"
+date: "`r Sys.Date()`"
+output:
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
+---
+
+## Packages
+
+```{r, include = TRUE, message=FALSE}
+#ioslides_presentation:
+require(dplyr)
+require(ggplot2)
+require(rpart)
+require(rpart.plot)
+```
+
+## Basic 
+
+In a basic scenario we have a sample of ten people. 
+Each person has `(1)` or does not have `(0)` a given characteristic. 
+
+```{r}
+characteristic <-  c(1, 1, 1, 1, 0, 1, 1, 0, 0, 0)
+characteristic
+```
+
+We wish to classify the whole sample as either `zero` or `one`; does the sample has the characteristic? 
+
+As the majority of the set is made by characteristic of type `one`, we classify the whole sample as a sample of _class_ `one`.
+
+The _Miss Classification Error_ (MCE) being:
+
+```{r}
+e0 <- 4/10
+e0
+```
+
+as four characteristic, four zeros, are wrongly classified 
+
+
+
+
+## Data
+
+In a more complicated scenario we can have characteristic associated males of females
+
+```{r}
+data <- tibble(
+    gender = rep(c('M', 'F'), each = 5), 
+    characteristic = c(1, 1, 1, 1, 0, 1, 1, 0, 0, 0)
+
+)
+data
+```
+
+
+## Root classification {.columns-2 .smaller}
+
+
+```{r}
+data  |> 
+    group_by(event)  |> 
+    count()
+```    
+
+As in the root node `one` is the most frequent class, we classify the whole node as a node of class `one`
+
+The miss classification error (MCE), where zero occurs, is therefore:
+
+```{r}
+e0 <- 4/10 
+e0
+```
+
+## First split 
+
+We now split our data based on variable `gender`
+
+```{r}
+split_gender <- data  |> 
+    group_by(gender, event)  |> 
+    summarise(n = n(), .groups = 'drop')
+split_gender    
+ ```   
+
+
+
+## First split 
+
+```{r}
+split_gender
+```
+
+The `F` node is at prevalece `zero`. As a result, MCE is:
+
+```{r}
+e1_F <- 2 / (3+2); e1_F
+```
+
+The `M` node is at prevalece `one`. As a result, MCE is:
+
+```{r}
+e1_M <- 1 / (4+1); e1_M
+```
+
+## First split 
+
+```{r}
+split_gender
+```
+
+The over all MCE is:
+
+```{r}
+e1 <- (2+1) / (3+2+1+4); e1
+```
+
+## First split 
+
+We rember the MCE at root node was 
+```{r}
+e0
+```
+
+Scaling on `e0`, `r0` becomes:
+
+```{r}
+r0 <- e0/e0
+r0
+```
+
+while `r1` becomes:
+
+```{r}
+r1 <- e1/e0
+r1
+```
+
+
+## toy tree
+
+```{r}
+fm <- rpart(event~gender, 
+    data = data, 
+    method = 'class',
+    parms = list(split = 'gini'), 
+    control = rpart.control(
+        minbucket = 2,
+        cp = 0.00001),
+    xval = 2)
+rpart.plot(fm)
+```
+
+## Cost of pruning 
+
+```{r}
+printcp(fm)    
+```
+```{r}
+CP <- (1-0.75)/(1-0)
+CP
+```
+
+
