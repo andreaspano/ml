@@ -80,7 +80,7 @@ e0 <- n_survived/n
 e0
 ```
 
-Root node is classified as `0` node as the prevalent class is `0` not survived 
+Root node is classified as `Dead` node as the prevalent class is `Dead` 
 
 
 ## Root node
@@ -94,8 +94,8 @@ Given that we are using variable `sex` as a splitting value, the split tells us 
 ```{r}
 conf1 <- trn  |> 
     group_by(survived, sex)  |> 
-    count()
- conf1
+    count()  
+  conf1
 ```
 
 Dead female and survived males become miss classifications
@@ -135,7 +135,43 @@ Function `printcp()` makes all of this for us
 printcp(fm0)
 ```
 
-## Cross validation (xval)
+## Cross validation (xval) {.columns-2}
+
+![](../image/cv.png){width=75%}
+
+For each split 
+
+Training set is split into 10 subset 
+
+Tree is fit on nine out of ten subsets while wth 10~th~ subset is used for prediction
+
+Prediction is made on ten test subsets 
+
+MCE is computed for each test 
+
+
+## xval explained
+
+```{r}
+
+xval <- function(i , trn){
+  val_i <- sample_frac(trn, .1)
+  trn_i <- trn  |> suppressMessages(anti_join(val_i))
+  fm_i <-  rpart(survived ~ . ,data = trn_i, method = 'class',
+                parms = list(split = 'gini'), 
+                control = rpart.control(maxdepth = 1, xval = 10))
+  prd_i <- predict(fm_i, newdata = val_i, type = "class")
+  conf_mat_i <- table(val_i$survived, prd_i)
+  err_i <- 1-sum(diag(conf_mat_i))/sum(conf_mat_i)
+}
+err <- purrr::map_dbl(1:10, xval, trn = trn)
+```
+```{r}
+xerror <- mean(err); xerror
+xstd <- sd(err); xstd
+```
+
+
 
 ## Cp
 
@@ -230,6 +266,9 @@ summary(fm2)
 ## Variabel importance
 
 # ref 
-#https://stats.stackexchange.com/questions/117908/rpart-complexity-parameter-confusion
+https://stats.stackexchange.com/questions/117908/rpart-complexity-parameter-confusion
 
 
+I have a purely categorical dataframe from the UCI machine learning database 
+
+https://archive.ics.uci.edu/ml/datasets/Diabetes+130-US+hospitals+for+years+1999-2008
