@@ -43,7 +43,94 @@ titanic <- bind_rows(titanic_train, titanic_test)  |>
 
 trn <- titanic %>% 
   sample_frac(.8)
+
+tst <- titanic  |> 
+  anti_join(trn, by = names(trn))
+
+nrow(trn)
+nrow(tst)
 ```
+
+## Blind Classification 
+
+```{r}
+tbl <- table(trn$survived)  |> 
+  prop.table()  |> 
+  round(2)
+
+tbl
+
+cl <- names(tbl)[tbl == max(tbl)]
+```
+
+
+
+Majority of passengers (`r max(tbl)`) were `r cl`. 
+
+
+
+As a consequence, if we were to classify the whole traing data set, without any further information,
+the most educated guess for any passenger would be classifying teh passengr as __`r cl`. __
+
+## Training Miss Classification Error 
+
+Prediction:
+```{r}
+prd <- factor(rep(cl, nrow(trn)), levels = levels(trn$survived))
+```
+
+Confusion matrix:
+
+```{r}
+cm <- table(trn$survived, prd); cm
+```
+
+Training miss classification error (MCE): 
+
+```{r}
+mce <-   1 - sum(diag(cm))/sum(cm); mce
+```  
+
+## Cross Validation MCE
+
+## Cross validation (xval) {.columns-2}
+
+![](../image/cv.png){width=80%}
+
+Training set is split into 10 subsets
+
+Each subset becomes a validation set with the concatenation of the remaining nine becomong the new training set  
+
+Blind classification is performed on each training set and prediction is made on each validation set 
+
+Prediction is teherefore made on ten validation subsets 
+
+MCE is computed for each validation set for a total of ten MCEs
+
+We then compure average and standard deviation of the ten MCEs
+
+
+## Test MCE
+
+Prediction:
+```{r}
+prd <- factor(rep(cl, nrow(tst)), levels = levels(trn$survived))
+```
+
+Confusion matrix:
+
+```{r}
+cm <- table(tst$survived, prd); cm
+```
+
+Test miss classification error (MCE): 
+
+```{r}
+mce <-   1 - sum(diag(cm))/sum(cm); mce
+```  
+
+
+
 
 
 ## Basic Tree
@@ -172,7 +259,6 @@ xstd <- sd(err); xstd
 ```
 
 
-
 ## Cp
 
 
@@ -272,3 +358,6 @@ https://stats.stackexchange.com/questions/117908/rpart-complexity-parameter-conf
 I have a purely categorical dataframe from the UCI machine learning database 
 
 https://archive.ics.uci.edu/ml/datasets/Diabetes+130-US+hospitals+for+years+1999-2008
+
+
+
