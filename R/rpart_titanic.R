@@ -10,13 +10,21 @@ require(tidyr)
 titanic <- bind_rows(titanic_train, titanic_test)  |> 
   as_tibble()  |>  
   select ( survived = Survived, class = Pclass, sex = Sex, age = Age)  |>  
-  mutate(survied = factor(survived, levels = c)0,1) 0 , labels = c('Y',, 'N')
+  mutate(survied = factor(survived, levels = c(1,0) , labels = c('Y', 'N')))
+
+
+readr::write_csv(titanic, '~/dev/julia/titanic.csv', na = "")
 
 
   na.omit()
 
 trn <- titanic %>% 
   sample_frac(.8)
+
+tst <- titanic  |> 
+  anti_join(trn)
+  
+
 
 fm0 <- rpart(survived ~ . , data = trn, method = 'class', 
         parms = list(split = 'gini'), 
