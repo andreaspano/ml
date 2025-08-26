@@ -1,0 +1,63 @@
+## Test
+
+For a demonstration of a linea plot on a polar axis, see fig-polar.
+
+```{python}
+#| label: fig-polar
+#| fig-cap: "A line plot on a polar axis"
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+#r = np.arange(0, 2, 0.01)
+#theta = 2 * np.pi * r
+#fig, ax = plt.subplots(
+#  subplot_kw = {'projection': 'polar'} 
+#)
+##ax.plot(theta, r)
+#ax.set_rticks([0.5, 1, 1.5, 2])
+#ax.grid(True)
+#plt.show()
+```
+
+## Introduction
+
+-   Decision Tree is one of the commonly used exploratory data analysis and objective segmentation techniques.
+
+-   Great advantage with Decision Tree is that its output is relatively easy to understand or interpret.
+
+-   A decision tree is a **recursive hierarchical partitioning** of the input data: at each node (step) a specific value of a single independent variables is used for the partition.
+
+## Introduction
+
+-   Tree-based methods can be used for both
+    -   **Classification**: Categorical response variable 
+         - Binary Response Variable
+         - Multi Class Response Variable
+    -   **Regression**: Continuos response variable 
+- Explanatory variables can be both 
+   - Categorical 
+      - Binary
+      - Multi Class
+   - Continuos
+
+
+## Note
+
+* We will first analyse Classification tree with:
+   * Binary response variable
+   * Binary regressors
+* We will expand later on  
+
+
+## Tree Building 
+
+-   The building of a tree is usually produced in two phases:
+
+    -   *Growth*
+    -   *Pruning*.
+
+-   To grow a tree, at each step, a binary splitting is used.
+-   To prune a tree ....
+
+

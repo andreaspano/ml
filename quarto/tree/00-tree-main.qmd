@@ -1,0 +1,21 @@
+---
+title: "Tree Models"
+format: 
+  revealjs:
+    theme: white
+    css: style.css
+transition: slide
+---
+
+::: {style="text-align:center; margin-top:0%"}
+# Intro
+:::
+{{< include 01-tree-intro.qmd >}}
+::: {style="text-align:center; margin-top:0%"}
+# Growth
+:::
+{{< include 02-tree-growth.qmd >}}
+::: {style="text-align:center; margin-top:0%"}
+# Pruning
+:::
+{{< include 03-tree-pruning.qmd >}}

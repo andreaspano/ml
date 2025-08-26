@@ -1,0 +1,289 @@
+---
+title: "Pruning"
+format: 
+  revealjs:
+    theme: white
+    css: style.css
+transition: slide
+---
+
+
+## The idea
+
+- Starting from a (almost) fully grown tree we can start removing nodes in along a bottom-up path. 
+
+- At each prune we have a parent node and two child nodes
+
+- We define the __Cost__ of the parent node as:
+$$C_P = n G_P + \alpha$$
+
+- We define the __Cost__ of the two child nodes as:
+
+$$C_C = n_L G_L + n_R G_R + 2\alpha$$
+
+- We decide to prune child node if:
+
+$$C_C \le C_P$$
+
+
+
+
+## The idea
+
+- Clearly $\alpha$ plays a crucial role
+
+- For any split a specific $\tilde{\alpha}$ exists so that:
+
+$$C_C = C_P$$
+
+- Infact:
+$$n_L G_L + n_R G_R + 2\alpha = n G_P + \alpha$$
+
+- Leads to:
+
+$$\tilde{\alpha} = n G_P - n_L G_L - n_R G_R$$
+
+
+
+
+
+
+
+
+- By construction is always: 
+$$G_{Child} \le G_{parent}$$
+
+- On the other side:
+$$G_{Parent} \rightarrow \tilde{T}_{Parent} = 1 $$
+$$G_{Child} \rightarrow \tilde{T}_{Child} = 2 $$
+
+
+- Where 
+    - $\tilde{T} =$ Number of terminal nodes _(leafs)_ and represents the cost we must pay to gain extra Gini purity 
+
+
+## The idea
+
+- As a result we can define the cost pruning two child nodes as a linear combination of $G$ and $\tilde{T}$:
+
+$$ C_{C} = G_C + \alpha \tilde{T} $$
+
+- As opposite to the same linear combination at the parent node
+
+$$ C_{P} = G_P + \alpha \tilde{T} $$
+
+- We decide to remove child nodes if:
+
+$$C_C \le C_P$$
+
+- Clearly __$\alpha$__ is the crucial element
+
+## The idea
+
+- Any pruning step has a $\tilde{\alpha}$ that makes $$C_C = C_P$$
+
+- That is:
+
+$$\tilde{\alpha}$ = 
+
+
+
+## Bias-Variance Tradeoff
+
+-   Bias-variance tradeoff in machine learning is a tradeoff between:
+
+    -   the degree to which a model fits the training data
+    -   its predictive accuracy
+
+-   This refers to the general rule that beyond a point:
+    - it is counterproductive to improve the fit of a model to the training data
+    - as this increases the likelihood of overfitting
+
+-   It is easy to see that deep trees are more likely to overfit the data than shallow ones.
+
+## Bias-Variance Tradeoff
+
+-   One obvious way to control such overfitting is to construct shallower trees by stopping the algorithm at an appropriate point based on whether a split significantly improves the fit.
+
+-   Another is to grow a tree unrestricted and then prune it back using an appropriate criterion.
+
+-   We take the latter approach.
+
+## Bias-Variance Tradeoff
+
+-   The algorithm minimises the cost, $C_{\alpha}(T)$, a quantity that is a linear combination of:
+    -   the error $R(T)$\
+    -   the number of leaf nodes in the tree, $|\tilde{T}|$:
+
+$$ C_{\alpha}(T) = R(T) + \alpha |\tilde{T} | $$
+
+-   The error being:
+    -   The fraction of misclassified instances for a discrete variable
+    -   Variance in the case of a continuous variable,
+
+## Bias-Variance Tradeoff
+
+$$ C_{\alpha}(T) = R(T) + \alpha |\tilde{T} | $$
+
+-   When $\alpha = 0$, this simply returns the original fully grown tree.
+
+-   As $\alpha$ increases, we incur a penalty that is proportional to the number of leaf nodes
+
+-   In practice we vary $\alpha$ and pick the value that gives the subtree that results in the smallest cross-validated prediction error. ed to do is pick the value of the coefficient that gives the lowest cross-validated error
+
+-   We usually set a lower threshold for $\alpha$. $\alpha = 0.01$ by default in rpart
+
+
+
+
+## Example
+
+::: columns
+::: column
+
+![](fig/simple-tree.png)
+
+:::
+
+::: column
+
+1+1
+
+:::
+:::
+
+
+
+
+
+
+
+## The idea
+
+-   Starting from a (almost) fully grown tree we can start removing nodes of our tree and ask ouself what would be the loss of remiving such a subtree.
+
+-   The cost of removing a subtree is computed as:
+
+$$ C_{\alpha}(T) = R(T) + \alpha |\tilde{T} | $$
+
+-   where
+    -   the error $R(T)$ in the subtree computed\
+    -   Number of *leaf* nodes in the subtree, $|\tilde{T}|$:
+
+
+
+## \[CT\] Highest Information Gain
+
+-   Entropy $$E = \sum_i -p_i \times log_2(p_i) $$
+
+-   $E=0$ for a *pure* class
+
+-   $max(E) = -n \times p \times log_2(p)$
+
+-   The value of $E$ is larger than 1 if the number of classes is larger than 2
+
+-   The value of $max(E)$ increases as $N$ increases
+
+## \[CT\] Highest Information Gain
+
+-   Calculate entropy before the split (parent node).
+-   Calculate entropy in each child node after a candidate split.
+
+$$\text{Entropy}_{\text{split}} = \frac{n_{\text{left}}}{n} \cdot \text{Entropy}_{\text{left}} + \frac{n_{\text{right}}}{n} \cdot \text{Entropy}_{\text{right}}$$
+
+-   Compute the weighted average entropy of the split:
+
+$$\text{Information Gain} = \text{Entropy}_{\text{parent}} - \text{Entropy}_{\text{split}}$$
+
+```{=html}
+<!---
+
+Less used measure
+## [CT] Classification Error 
+
+$$CE = 1 - max(p_i)$$
+
+* $CE=0$ for a _pure_ class
+
+* $max(CE) = 1$
+
+* The value of $CE$ is always between 0 and 1 regardless the size of N
+
+# [RT] Total Residual Sum of Squares 
+
+
+
+$$CE = 1 - max(p_i)$$
+
+* $CE=0$ for a _pure_ class
+
+* $max(CE) = 1$
+
+* The value of $CE$ is always between 0 and 1 regardless the size of N
+--->
+```
+
+## \[RT\] Total Residual Sum of Squares (RSS)
+
+-   For a node with continuous reposnse variable the Residual Sum of Squares (RSS) is:
+
+$$\text{RSS}(t) = \sum_{i=1}^{n_t} (y_i - \bar{y}_t)^2$$
+
+-   It measures the total variance of the target variable in that node.
+
+-   Where: ​
+
+    -   $y_i$ is the actual value of the i-th observation
+    -   $\hat{y}_t$ is the predicted value of the i-th observation (usually the mean in the node)
+    -   $n$ is the number of observations
+
+## Splitting
+
+-   The R rpart algorithm offers both entropy and Gini index methods as splitting choices
+
+-   The algorithm stops splitting when $cp$: complexity parameters reaches a given threshold
+
+-   There is a fair amount of fact and opinion about which method is better
+
+-   The answer as to which method is the best is: it depends. Try both
+
+## Splitting on categorical regressors
+
+-   When a canditate split is a categorical variable, prior attempting the split, all possible combinations of the levels of the categorical variable are computed.
+
+-   The total number of combinations is $2^{k-1}-1$.
+
+-   For each combination the within-node variability of the node is computed
+
+-   The combination corrensponding to the minimum within-node variability is selected
+
+## Splitting on continuos regressors
+
+-   When a canditate split is a continuos variable, prior attempting the split, all the unique values of the regressor are sorted
+
+-   The midpoints between each pair of consecutive unique values is computed
+
+-   The total number of midpoints is $k-1$.
+
+-   For each midpoint the values of the regressor is split between two subset and the within-node variability of the node is computed.
+
+-   The split corrensponding to the minimum within-node variability is selected
+
+## Splitting
+
+-   The algorithm works by making the best possible choice at each particular stage, without any consideration of whether those choices remain optimal in future stages.
+
+-   That is, the algorithm makes a locally optimal decision at each stage
+
+-   It is thus quite possible that such a choice at one stage turns out to be sub-optimal in the overall scheme
+
+-   In other words, the splitting method does not find a globally optimal tree.
+
+-   The **Bias Variance Tradeoff** method is used to find the global optimal tree
+
+
+## Pruning
+
+-   Pruning the tree is about selecting the number of terminal nodes that minimize the cost $C_{\alpha}(T)$
+
+-   In practice this is achieved by imposing a desired $cp$ threshold
