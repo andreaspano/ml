@@ -1,6 +1,6 @@
 /* Reduce base font size for all slides */
 .reveal {
-  font-size: 2em;  /* 85% of default */
+  font-size: 1em;  /* 85% of default */
 }
 
 /* Optional: reduce heading sizes proportionally */

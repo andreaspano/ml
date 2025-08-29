@@ -8,18 +8,18 @@ transition: slide
 ---
 
 
-## The idea
+## Pruning - The idea
 
 - Starting from a (almost) fully grown tree we can start removing nodes in along a bottom-up path. 
 
 - At each prune we have a parent node and two child nodes
 
 - We define the __Cost__ of the parent node as:
-$$C_P = n G_P + \alpha$$
+$$C_P = \frac{n_P}{N} G_P + \alpha$$
 
 - We define the __Cost__ of the two child nodes as:
 
-$$C_C = n_L G_L + n_R G_R + 2\alpha$$
+$$C_C = \frac{n_L}{N} G_L + \frac{n_R}{N} G_R + 2\alpha$$
 
 - We decide to prune child node if:
 
@@ -28,7 +28,7 @@ $$C_C \le C_P$$
 
 
 
-## The idea
+##  Pruning - The idea
 
 - Clearly $\alpha$ plays a crucial role
 
@@ -37,54 +37,53 @@ $$C_C \le C_P$$
 $$C_C = C_P$$
 
 - Infact:
-$$n_L G_L + n_R G_R + 2\alpha = n G_P + \alpha$$
+
+$$\frac{n_L}{N} G_L + \frac{n_R}{N} G_R + 2\alpha = \frac{n_P}{N} G_P + \alpha$$
 
 - Leads to:
 
-$$\tilde{\alpha} = n G_P - n_L G_L - n_R G_R$$
+$$\tilde{\alpha} = \frac{n G_P - n_L G_L - n_R G_R}{N}$$
+
+- Therefore the sequence of $\tilde{\alpha}$ is given (pre computed) when the tree is fully growt  
+
+## Pruning - Example
 
 
+::: columns
+::: column
+
+![](fig/simple-tree-02.png)
+:::
+
+::: column
+$$\tilde{\alpha} = \frac{n G_P - n_L G_L - n_R G_R}{N}$$
+
+$$ \tilde{\alpha}_{red} = \frac{6 \cdot 0.278 - 3 \cdot 0.444 - 3 \cdot 0 }{10}$$
+
+$$ \tilde{\alpha}_{red} = 0.0336 $$
+$$ \tilde{\alpha}_{blue} = 0.333 $$
+
+$$ \tilde{\alpha}_{green} = 0.5 $$
 
 
+:::
+:::
 
 
+##  Pruning - Example
 
+![](fig/4-plot.png)
 
-- By construction is always: 
-$$G_{Child} \le G_{parent}$$
+## Pruning - Choosing $\alpha$
 
-- On the other side:
-$$G_{Parent} \rightarrow \tilde{T}_{Parent} = 1 $$
-$$G_{Child} \rightarrow \tilde{T}_{Child} = 2 $$
+- In conclusion, the growth phase maps the data onto a split support ( e spieagare meglio)  
 
+- The pruning phase works bottom-up along a predetermined series of $\alpha$
 
-- Where 
-    - $\tilde{T} =$ Number of terminal nodes _(leafs)_ and represents the cost we must pay to gain extra Gini purity 
+- The key point is about finding the __OPTIMAL__ $\alpha$
 
+- Where OPTIMAL means: find that specific $\alpha$ that maximise  __Prediction Performance__ measured on a validation set
 
-## The idea
-
-- As a result we can define the cost pruning two child nodes as a linear combination of $G$ and $\tilde{T}$:
-
-$$ C_{C} = G_C + \alpha \tilde{T} $$
-
-- As opposite to the same linear combination at the parent node
-
-$$ C_{P} = G_P + \alpha \tilde{T} $$
-
-- We decide to remove child nodes if:
-
-$$C_C \le C_P$$
-
-- Clearly __$\alpha$__ is the crucial element
-
-## The idea
-
-- Any pruning step has a $\tilde{\alpha}$ that makes $$C_C = C_P$$
-
-- That is:
-
-$$\tilde{\alpha}$ = 
 
 
 
