@@ -19,3 +19,7 @@ transition: slide
 # Pruning
 :::
 {{< include 03-tree-pruning.qmd >}}
+::: {style="text-align:center; margin-top:0%"}
+# Extra
+:::
+{{< include 04-tree-extra.qmd >}}

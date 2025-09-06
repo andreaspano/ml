@@ -2,6 +2,7 @@
 
 
 ## Growth
+### Splits
 
 -   In the whole data set we have a response variable $y$ and a set of predictors: $X = [x_1, \dots x_p]$
 
@@ -13,31 +14,10 @@
 
 -   Gini Gain is not the only available KPI but for the moment we stick on it
 
-```{=html}
-<!-- 
-* To split the nodes, the minimum _within-node variability_, is searched.
 
-* For CT Variability is usually measured with two alternative indices:
 
-    - Gini Index.
-    - Highest Information Gain 
-
-* For RT variability is measured by 
-
-    - Total Residual Sum of Squares  (RSS)
-
-This is an HTML-style comment 
-Assume a class made of: $4A$ , $3B$ and  $3C$ for a total of $10$ observations, the probability (frequency) of each class:
-
-* $P(A) =  0.4$, $P(B) = 0.3$ and $P(C) = 0.3$
--->
-```
-
-::: {style="text-align:center; margin-top:0%"}
-# Growth
-:::
-
-## Growth - Gini Index
+## Growth
+### Gini Index
 
 -   Gini index is computed as: $$G = 1 - \sum_{i=1}^{K}p{_i}{^2} $$
 -   where
@@ -47,7 +27,8 @@ Assume a class made of: $4A$ , $3B$ and  $3C$ for a total of $10$ observations, 
 -   $G$ is always between 0 and 1 regardless the size of K
 -   Gini index is a numerical way to measure node purity: the lower the Gini, the higher the purity of the node.
 
-## Growth - Example: Compute Gini Index
+## Growth
+### Example: Compute Gini Index
 
 -   Assuming that in a node we have a respnse variable $y$ with tow classes $[0,1]$ with $p_1=0.5$ and therefore $p_2 = 0.5$ i.e.:
 
@@ -59,7 +40,8 @@ $$G = 1 - 0.5^2 - 0.5^2 = 0.5$$
 
 -   And infact node is pure at 50%
 
-## Growth - Split Gini Index
+## Growth
+### Split Gini Index
 
 -   We split a node into two child nodes using an explatory variable i.e.:
 
@@ -74,7 +56,8 @@ $$G = 1 - 0.5^2 - 0.5^2 = 0.5$$
 
 $$G_{x_1} = \frac{n_a}{n} G(a) + \frac{n_b}{n} G(b)$$
 
-## Growth - Gini Gain
+## Growth
+### Gini Gain
 
 -   When we split a node on $x_1$ into two child nodes, the Gini Gain is: $$GG = G - G_{x_1}$$
 
@@ -84,7 +67,8 @@ $$G_{x_1} = \frac{n_a}{n} G(a) + \frac{n_b}{n} G(b)$$
 
     -   Dirtier: $GG < 0$ --- In practice algorithm skips it
 
-## Growth - Example: Split the parent node
+## Growth
+### Example: Split the parent node
 
 -   Suppose now we we have two independent variables along with $y$
 
@@ -92,7 +76,8 @@ $$y = [1,1,1,1,1,0,0,0,0,0]$$ $$x_1 = [a, a, a, a, b, b,b,b,b,b]$$ $$x_2 = [k,h,
 
 -   we can try to split the parent node into two child nodes using $x_1$ and $x_2$
 
-## Growth - Split on $x_1$
+## Growth
+### Split on $x_1$
 
 Given that: $$y = [1,1,1,1,1,0,0,0,0,0]$$ $$x_1 = [a, a, a, a, b, b,b,b,b,b]$$
 
@@ -104,7 +89,8 @@ Therefore:
 
 $$p_{{1(a)}} = \frac{4}{4} = 1.0 \quad p_{{0(a)}} = \frac{0}{4} = 0.0$$ $$p_{{1(b)}} = \frac{1}{6} = 0.17 \quad p_{{0(b)}} = \frac{5}{6} = 0.83$$
 
-## Growth - Split on $x1$
+## Growth
+### Split on $x1$
 
 Gini index in nodes $a$ & $b$ is:
 
@@ -121,11 +107,13 @@ Gini gain after the split is:
 
 $$GG_{x_1} = G - G_{x_1} =  0.5 - 0.17 = 0.33$$
 
-## Growth - Split on $x2$
+## Growth 
+### Split on $x2$
 
 Repeat calculation
 
-## Growth - Chose your next split variable
+## Growth 
+### Chose your next split variable
 
 Given the Gini Gains ($GG$) for $x_1$ and $x_2$ are:
 
@@ -133,7 +121,8 @@ $$GG_{x_1} =  0.33$$ $$GG_{x_2} =  0.02$$
 
 -   We decide to split on $x_1$
 
-## Growth - Stop Rule
+## Growth 
+### Stop Rule
 
 -   Recursively splitting we can grow very large, but not infinitive, trees
 -   We can control tree growt by using these parameters:
@@ -149,7 +138,8 @@ $$GG_{x_1} =  0.33$$ $$GG_{x_2} =  0.02$$
 | `min_weight_fraction_leaf` | Like `min_samples_leaf`, but as a fraction of total sample weight. | Useful with weighted samples. |
 :::
 
-## Growth - Impurity Decrease
+## Growth 
+### Impurity Decrease
 
 -   The Impurity Decrease is:
 
@@ -167,7 +157,8 @@ $$ ID = \frac{N_p}{N} GG$$
 
 -   This prevents very small nodes from causing splits unless the improvement is substantial.
 
-## Stop Rules
+## Growth 
+### Stop Rules
 
 ::: {style="font-size:50%"}
 1.  Check if the node is **pure** (all samples same class):
@@ -193,21 +184,43 @@ $$ ID = \frac{N_p}{N} GG$$
 8.  **Repeat** the same checks for the left and right child nodes (recursion).
 :::
 
-## Growth - Summary
+## Growth
+### Summary
+
+- Growing a tree is about mapping the data onto a _split domain_
+
+    - The data lives in a feature space. Two explanatory variables $x_1$ and $x_2$ live i a $2d$ plane
+
+- Splitting means: partitioning that space.
+
+    - A tree recursively partitions this feature space into rectangular regions (or hyper-rectangles in higher dimensions)
+
+    - After several splits, we have carved up the space into non-overlapping regions.
+
+- Mapping data onto the split domain.
+
+    - Every observation falls into exactly one of these regions.
+
+    - Those regions correspond to the leaves of the tree.
+
+- Within each leaf, you assign a predicted class (e.g., majority class in the training data for that region).
+
+
+## Growth
+### Summary
 
 -   At the end of the growth process we have a very large tree
 
--   This large tree in almost usless
+-   This large tree is almost usless
 
 -   It is just a very **over-fitted** model
 
 -   To avoid over-fitting we need pruning the tree up to an optimumum level
 
--   Pruning is about reducing tree side walking bottom-up
+-   Pruning is about reducing tree size walking bottom-up
 
-
-## Example 
-
+## Growth
+### Example 
 
 ```{python}
 #| echo: true
@@ -232,7 +245,8 @@ y = df["y"]
 X = df.drop(columns=["y"])
 
 ```
-## Example 
+## Growth
+### Example 
 
 ```{python}
 #| echo: true
@@ -255,8 +269,8 @@ model.fit(X, y)
 ```
 
 
-
-## Example
+## Growth
+### Example
 
 ::: columns
 ::: column
@@ -277,9 +291,7 @@ plot_tree(
 )
 plt.close(fig) 
 ```
-
 :::
-
 ::: column
 ```{python}
 display (fig)
