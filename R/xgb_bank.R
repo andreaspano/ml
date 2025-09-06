@@ -6,10 +6,12 @@ require(readr)
 require(e1071)
 require(fastDummies)
 require(tidyr)
+require(ggplot2)
+require(caret)
 
 
 
-data <- read_delim('~/Downloads/bank-additional-full.csv', delim = ';')
+data <- read_delim('./data/bank-additional-full.csv', delim = ';')
 
 data <- data %>% 
   select(job, marital, education, default, housing, loan, contact, euribor3m, month, duration, y)
@@ -53,7 +55,6 @@ fm <- xgb.train(data = trn_xgb,
 prf <- fm$evaluation_log %>% 
   pivot_longer(cols = -iter, values_to = "logloss")
 
-
 ggplot(data = prf) +
   geom_line(aes(x = iter, y = logloss, colour = name)) 
 
@@ -74,7 +75,7 @@ val_ac <- confusionMatrix(class_val, factor(val_y))$overall[1]
 
 
 
-##############################################################
+
 # use model to make predictions on test data
 prd_tst = predict  (fm, tst_x, iterationrange = c(1, max_iter) )
 
@@ -84,8 +85,8 @@ class_tst <- factor(ifelse(prd_tst> 0.5 , 1, 0))
 # Accuracy on test
 tst_ac <- confusionMatrix(factor(class_tst), factor(tst_y))$overall[1]
 
-val_ac
-tst_ac
+# Print results
+cat('\n', 'Validation Accuracy', val_ac, '\n', 'Test Accuracy', tst_ac, '\n')
 
 
 

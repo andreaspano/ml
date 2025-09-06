@@ -1,8 +1,8 @@
 #---- Settings ----
 
 # Load tuned models to save time
-load("./data/xgb_tune_diabetes.rda")
-load("./data/rf_tune_diabetes.rda")
+#load("./data/xgb_tune_diabetes.rda")
+#load("./data/rf_tune_diabetes.rda")
 
 # Load required packages
 require(tidyverse)
@@ -10,13 +10,26 @@ require(doParallel)
 require(caret)
 require(ranger)
 require(plotROC)
+require(readr)
+require(tictoc)
 
 # Uncomment for parallel computing
-# n_core <- detectCores()
-# cl <- makePSOCKcluster(n_core - 1)
-# registerDoParallel(cl)
+
+#n_core <- detectCores() 
+n_core <- 15
+cl <- makePSOCKcluster(n_core)
+registerDoParallel(cl)
 
 set.seed(1243)
+
+
+# Diabetes_012_health_indicators_BRFSS2021.csv is a clean dataset of 236,378 survey responses to the CDC's BRFSS2021. 
+# The target variable Diabetes_012 has 3 classes. 
+# 0 is for no diabetes or only during pregnancy, 
+# 1 is for prediabetes, 
+# 2 is for diabetes. 
+# There is class imbalance in this dataset
+# This dataset has 21 feature variables
 
 # Features Explanation:
 # Diabetes_binary (Target Variable) - binary variable indicating the presence (1) or absence (0) of diabetes.
@@ -42,11 +55,18 @@ set.seed(1243)
 # Education - education level of the respondents, represented by a numeric scale (1-6).
 # Income - household income level, represented by a numeric scale.
 
-diabetes_full <- read_delim("./data/diabetes_binary_health_indicators_BRFSS2021.csv",
-                            col_types = "ffffdfffffffffdddffdff")
+diabetes_full <- read_delim("./data/diabetes.csv",
+                            col_types = "dfffdfffffffffdddffdff")
+
+# Adjust response variable
+diabetes_full <- diabetes_full |> 
+  mutate(Diabetes_binary = ifelse(Diabetes_012 > 0 , 1, 0), .keep ='unused') |> 
+  mutate(Diabetes_binary = factor(Diabetes_binary))
+  
+
+
 
 #---- Preprocessing ----
-
 # Split data into training (80%) and test set (20%)
 idx_training <- sample(1:nrow(diabetes_full), size = 0.8 * nrow(diabetes_full))
 
@@ -67,30 +87,33 @@ xgb_tune_grid <- expand.grid(
   nrounds = seq(100, 1000, by = 50), # number of trees
   eta = c(0.1, 0.3, 0.5), # learning rate
   max_depth = c(2, 3, 4), # tree depth
-  gamma = 0,
-  colsample_bytree = 1,
-  min_child_weight = 1,
-  subsample = 1
+  gamma = 0, #Minimum Loss Reduction
+  colsample_bytree =c(.5 , .75,  1), # Subsample Ratio of Columns
+  min_child_weight = 1, #Minimum Sum of Instance Weight
+  subsample = c(.5 , .75,  1) # Fraction of Training samples (randomly selected) that will be used to train each tree.
 )
 
 # Define control parameters for XGBoost tuning
 xgb_tune_control <- trainControl(
-  method = "cv",
-  number = 5,
+  method = "cv", #Cross Validation
+  number = 5, #Number of cv folds
   verboseIter = TRUE,
   allowParallel = TRUE ,
 )
 
+
 # Uncomment to re-tune XgbBoost
-# xgb_tune <- train(
-#   x = X_train,
-#   y = y_train,
-#   trControl = xgb_tune_control,
-#   tuneGrid = xgb_tune_grid,
-#   method = "xgbTree",
-#   metric = "Accuracy",
-#   verbose = TRUE
-# )
+tic()
+xgb_tune <- train(
+   x = X_train,
+   y = y_train,
+   trControl = xgb_tune_control,
+   tuneGrid = xgb_tune_grid,
+   method = "xgbTree",
+   metric = "Accuracy",
+   verbose = TRUE
+)
+toc()
 
 # Print XGBoost tuning results
 xgb_tune
