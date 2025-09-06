@@ -1,0 +1,62 @@
+## Highest Information Gain
+
+-   Entropy $$E = \sum_i -p_i \times log_2(p_i) $$
+
+-   $E=0$ for a *pure* class
+
+-   $max(E) = -n \times p \times log_2(p)$
+
+-   The value of $E$ is larger than 1 if the number of classes is larger than 2
+
+-   The value of $max(E)$ increases as $N$ increases
+
+
+## Splitting
+
+-   Scikit offers both entropy and Gini index methods as splitting choices
+
+-   The algorithm stops splitting when $cp$: complexity parameters reaches a given threshold
+
+-   There is a fair amount of fact and opinion about which method is better
+
+-   The answer as to which method is the best is: it depends. Try both
+
+## Total Residual Sum of Squares (RSS)
+
+-   For a node with continuous reposnse variable the Residual Sum of Squares (RSS) is:
+
+$$\text{RSS}(t) = \sum_{i=1}^{n_t} (y_i - \bar{y}_t)^2$$
+
+-   It measures the total variance of the target variable in that node.
+
+-   Where: ​
+
+    -   $y_i$ is the actual value of the i-th observation
+    -   $\hat{y}_t$ is the predicted value of the i-th observation (usually the mean in the node)
+    -   $n$ is the number of observations
+
+- For continuos response variables, __RSS__ Plays the role og __Gini__ 
+
+
+## Splitting on categorical regressors
+
+-   When a canditate split is a categorical variable, prior attempting the split, all possible combinations of the levels of the categorical variable are computed.
+
+-   The total number of combinations is $2^{k-1}-1$.
+
+-   For each combination the within-node variability of the node is computed
+
+-   The combination corrensponding to the minimum within-node variability is selected
+
+## Splitting on continuos regressors
+
+-   When a canditate split is a continuos variable, prior attempting the split, all the unique values of the regressor are sorted
+
+-   The midpoints between each pair of consecutive unique values is computed
+
+-   The total number of midpoints is $k-1$.
+
+-   For each midpoint the values of the regressor is split between two subset and the within-node variability of the node is computed.
+
+-   The split corrensponding to the minimum within-node variability is selected
+
