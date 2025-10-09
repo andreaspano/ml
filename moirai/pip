@@ -1,0 +1,5 @@
+pip install git+https://github.com/SalesforceAIResearch/uni2ts.git
+pip install torch
+
+
+source "./.venv/bin/activate"
