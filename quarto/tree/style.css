@@ -14,7 +14,6 @@
 
 
 .reveal .slides section h2 {
-  display: inline-block;
   vertical-align: middle;
   margin: 0;
   padding: 0;
@@ -26,7 +25,6 @@
 
 /* H3 inline style */
 .reveal .slides section h3 {
-  display: inline-block;
   vertical-align: middle;
   margin: 0;
   padding: 0;
@@ -34,6 +32,4 @@
   font-weight: 600;
   color: #9b2226;   /* dark red for H3 */
 }
-
-
 
