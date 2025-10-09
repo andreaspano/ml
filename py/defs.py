@@ -64,14 +64,11 @@ def evaluate_single_alpha(ccp_alpha, X, y , cv):
 
 
 def evaluate_multiple_alpha(ccp_alpha, X, y , cv, n_workers):
-
-
     cv_scores = []
     with ProcessPoolExecutor(max_workers=n_workers) as executor:
         futures = {executor.submit(evaluate_single_alpha, alpha, X, y , cv): alpha for alpha in ccp_alpha}
         
         for future in tqdm(as_completed(futures), total=len(futures), desc="Evaluating alphas"):
-            print(alpha)
             score = future.result()
             cv_scores.append(score)
     

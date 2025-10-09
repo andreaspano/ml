@@ -28,7 +28,7 @@ clf = DecisionTreeClassifier(random_state=0, criterion = 'gini', ccp_alpha=0.0)
 # Fit the tree
 clf.fit(X, y)
 
-# Plot without text
+# Plot Fully growth Tree
 plt.figure(figsize=(12, 6))
 plot_tree(
     clf,

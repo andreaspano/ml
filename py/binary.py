@@ -53,15 +53,16 @@ plot_tree(
 
 # Compute Alpha working bottom up over the tree
 path = model.cost_complexity_pruning_path(trn_x, trn_y)
-ccp_alphas, impurities = path.ccp_alphas[:-1], path.impurities[:-1]
+ccp_alphas = path.ccp_alphas[:-1]
+impurities = path.impurities[:-1]
 
 
 # Plot Impurity vs Alpha
 fig, ax = plt.subplots()
-ax.plot(path.ccp_alphas[:-1], path.impurities[:-1], marker="o", drawstyle="steps-post")
-ax.set_xlabel("effective alpha")
-ax.set_ylabel("total impurity of leaves")
-ax.set_title("Total Impurity vs effective alpha for training set")
+ax.plot(ccp_alphas, impurities, marker="o")
+ax.set_xlabel("Effective Alpha")
+ax.set_ylabel("Total Impurity of Leaves")
+ax.set_title("Total Impurity vs Effective Alpha for Training Set")
 
 
 # Check ccp effect
@@ -81,23 +82,23 @@ for ccp_alpha in ccp_alphas:
 
 
 fig, ax = plt.subplots(2, 2)
-ax[0,0].plot(ccp_alphas, node_counts, marker="o", drawstyle="steps-post")
+ax[0,0].plot(ccp_alphas, node_counts, marker="o")
 ax[0,0].set_xlabel("alpha")
 ax[0,0].set_ylabel("number of nodes")
 ax[0,0].set_title("Number of nodes vs alpha")
 
-ax[0,1].plot(ccp_alphas, depth, marker="o", drawstyle="steps-post")
+ax[0,1].plot(ccp_alphas, depth, marker="o" )
 ax[0,1].set_xlabel("alpha")
 ax[0,1].set_ylabel("depth of tree")
 ax[0,1].set_title("Depth vs alpha")
 
-ax[1,0].plot(ccp_alphas, impurities, marker="o", drawstyle="steps-post")
+ax[1,0].plot(ccp_alphas, impurities, marker="o")
 ax[1,0].set_xlabel("alpha")
 ax[1,0].set_ylabel("total impurity of leaves")
 ax[1,0].set_title("Impurity vs alpha [trn]")
 
-ax[1,1].plot(ccp_alphas, trn_scores, marker=".", label="train", drawstyle="steps-post")
-ax[1,1].plot(ccp_alphas, tst_scores, marker=".", label="test", drawstyle="steps-post")
+ax[1,1].plot(ccp_alphas, trn_scores, marker=".", label="train" )
+ax[1,1].plot(ccp_alphas, tst_scores, marker=".", label="test")
 ax[1,1].set_xlabel("Alpha")
 ax[1,1].set_ylabel("Accuracy") #The .score() method of the classifier is fixed to return accuracy for classifiers.
 ax[1,1].set_title("Accuracy vs alpha for trn and tst")
@@ -143,8 +144,7 @@ print(f"Best α (max CV): {best_alpha:.4f}, CV={best_cv:.3f}")
 print(f"1-SE α: {one_se_alpha:.4f}, CV={one_se_cv:.3f}")
 
 
-
-
+# Plot Cross Validation results
 fig, ax = plt.subplots(1, 1)
 plt.plot(path.ccp_alphas[:-1], scores_avg[:-1], marker="o" , color='blue')
 
@@ -159,7 +159,6 @@ ax.errorbar(
     elinewidth=1                   # thickness of error bars
 )
 ax.plot(best_alpha, best_cv, "ro", markersize=10, label="Best α")  
-
 ax.annotate(
     f"Best α={best_alpha:.3f}\nAcc={best_cv:.3f}",
     (best_alpha, best_cv),
@@ -168,10 +167,7 @@ ax.annotate(
     ha="left",
     color="red"
 )
-
 ax.plot(one_se_alpha, one_se_cv, "ro", markersize=10, label="Best one se α")  
-
-
 ax.annotate(
     f"Best α={one_se_alpha:.3f}\nAcc={one_se_cv:.3f}",
     (one_se_alpha, one_se_cv),
@@ -181,9 +177,6 @@ ax.annotate(
     color="red"
 )
 
-
-
-
 ax.set_xlabel("Alpha")
 ax.set_ylabel("Cross Validation Accuracy")
 ax.set_title("CV Accuracy vs Alpha")
@@ -191,19 +184,24 @@ plt.show()
 
 
 
-
-
-
-
 # Refit with best alpha
 best_model = DecisionTreeClassifier(
     criterion="gini",
     random_state=46, 
-    ccp_alpha = best_alpha)
-
-
+    ccp_alpha = best_alpha) 
 # Fit the tree
 best_model.fit(trn_x, trn_y)
+
+
+# Refit with one_se_alpha
+one_se_model = DecisionTreeClassifier(
+    criterion="gini",
+    random_state=46, 
+    ccp_alpha = one_se_alpha) #best_alpha
+# Fit the tree
+one_se_model.fit(trn_x, trn_y)
+
+
 
 # Plot Full Tree
 #plt.figure(figsize=(12, 6))
@@ -218,3 +216,37 @@ plot_tree(
     fontsize=10           # Effectively hides any residual text
 )
 
+
+
+# Plot best_tree & one_se tree
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# Plot first tree
+plot_tree(
+    best_model,
+    ax=axes[0],
+    filled=False,        
+    feature_names=['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10'],  
+    class_names=['0','1'],    
+    impurity=True,      # No impurity text
+    proportion=False,    # No proportion text
+    label='none',        # No node labels
+    fontsize=10           # Effectively hides any residual text
+)
+axes[0].set_title("Best Model")
+
+# Plot second tree
+plot_tree(
+    one_se_model,
+    ax=axes[1],
+    filled=False,        
+    feature_names=['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8', 'x9', 'x10'],  
+    class_names=['0','1'],    
+    impurity=True,      # No impurity text
+    proportion=False,    # No proportion text
+    label='none',        # No node labels
+    fontsize=10           # Effectively hides any residual text
+)
+axes[1].set_title("One se Model")
+
+plt.show()
