@@ -38,7 +38,7 @@ df |>
     geom_line(aes(month, kwh) ) +
     geom_point(aes(month, kwh) ) +
     facet_wrap(~year, ncol = 1)
-
+ 
   df |> 
      ggplot() +
       geom_violin(aes(hour, kwh) ) +

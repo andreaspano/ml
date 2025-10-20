@@ -4,5 +4,7 @@
 .Ruserdata
 *.html
 env/
+.venv/
+figs
 *_files*/
 
