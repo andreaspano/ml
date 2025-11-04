@@ -16,6 +16,9 @@ from statsforecast.models import (
     Naive,
     AutoTBATS
 )
+from hierarchicalforecast.methods import BottomUp, MinTrace
+from hierarchicalforecast.utils import aggregate, HierarchicalPlot
+from hierarchicalforecast.core import HierarchicalReconciliation
 
 # hyper paramemetets
 h = 3
@@ -159,23 +162,32 @@ tmp['ds'] = tmp['Mese'].apply(parse_italian_month)
 tmp['unique_id'] = tmp['Key VSPC'].str[:13]
 df = tmp.groupby(['unique_id', 'ds'], as_index=False)['Valore'].sum()    
 
+
+
 ## rename
-df = df.rename(columns={'Valore':'y'})
+df = df.rename(columns={'Valore':'y', 'unique_id':'series_id'})
 
 ## Check obs number
 series_length = (
     df
-        .groupby(['unique_id'], as_index=False)
+        .groupby(['series_id'], as_index=False)
         .size()
         .sort_values('size', ascending=True) 
 )
 
 # flter long series > 12
 
-long_series = series_length[series_length['size'] >= min_length].unique_id
-df = df[df['unique_id'].isin(long_series)]
+long_series = series_length[series_length['size'] >= min_length].series_id
+df = df[df['series_id'].isin(long_series)]
+df = df.copy()
+df['All'] = 'TOTAL'  
 
-
+spec = [
+    ['All'],                # top level (TOTAL)
+    ['All', 'series_id']    # bottom level (each unique_id under TOTAL)
+]
+Y_df, S_df, tags = aggregate(df=df, spec=spec) 
+df =  Y_df
 
 # split train and test
 ds_split = df['ds'].max() -  pd.DateOffset(months=h)
@@ -242,7 +254,8 @@ for _, row in best_model_df.iterrows():
 
     # fit & forecast
     sf = StatsForecast(models=[m], freq="MS", n_jobs=1)
-    fcst = sf.forecast(df=ser, h=h).reset_index(drop=True)
+    fcst = sf.forecast(df=ser, h=h, fitted = True).reset_index(drop=True)
+    fit = sf.forecast_fitted_values()
 
     # rename prediction column
     pred_col = [c for c in fcst.columns if c not in {"unique_id", "ds"}][0]
@@ -252,6 +265,11 @@ for _, row in best_model_df.iterrows():
 
 forecast_df = pd.concat(forecasts, ignore_index=True)
 print(forecast_df)
+
+# rec
+
+hrec.reconcile(Y_hat_df=fcst, Y_df=fit, 
+                          S_df=S_df, tags=tags, level=[80, 90])
 
 
 merged_df = pd.merge(
@@ -273,3 +291,21 @@ print(merged_mape_df)
 
 ##########################################
 # Reconciliation
+from hierarchicalforecast.methods import BottomUp, MinTrace
+from hierarchicalforecast.utils import aggregate, HierarchicalPlot
+from hierarchicalforecast.core import HierarchicalReconciliation
+reconcilers = [
+    BottomUp(),
+    MinTrace(method='mint_shrink'),
+    MinTrace(method='ols')
+]
+
+hrec = HierarchicalReconciliation(reconcilers=reconcilers)
+
+
+Y_rec_df = hrec.reconcile(Y_hat_df=Y_hat_df, Y_df=Y_fitted_df, 
+                          S_df=S_df, tags=tags, level=[80, 90])
+
+
+hrec.reconcile(Y_hat_df=, Y_df=Y_fitted_df, 
+                          S_df=S_df, tags=tags, level=[80, 90])
