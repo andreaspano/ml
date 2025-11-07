@@ -14,10 +14,8 @@ df = pd.read_csv('~/dev/ml/data/fondi-economics.csv', dtype=dtype)
 
 
 
-# Prepaer data
+# Prepare data
 df = prepare(df, min_length= min_lenght)
-#df.series_id.unique()
-
 
 # select 10B4000001057 only
 #df = df[df['series_id'] == '10B4000001057']
