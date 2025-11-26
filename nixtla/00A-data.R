@@ -80,9 +80,50 @@ y3 = ets_sim (n = 60, m = 12, level_init = 1, trend_init = 0.25, alpha = 0.2, be
 y4 = rnorm(n = 60, 3, .5)
   
 
+#####################################
+#Add correlation between series
+#####################################
 
-y = c(y1, y2, y3, y4)
+# 1. Generate independent time series
+X <- cbind(y1, y2, y3, y4)
 
+
+
+# 2. Define target correlation matrix
+target_corr <- matrix(c(
+  1.0, 0.2, 0.1, 0.0,
+  0.2, 1.0, 0.1, 0.01,
+  0.1, 0.1, 1.0, 0.05,
+  0.0, 0.01, 0.05, 1.0
+), nrow = 4, byrow = TRUE)
+
+# 3. Cholesky decomposition
+L <- chol(target_corr)
+
+# 4. Standardize original data
+X_mean <- colMeans(X)
+X_sd <- apply(X, 2, sd)
+X_scaled <- scale(X)
+
+# 5. Apply correlation transformation
+X_correlated <- X_scaled %*% L
+
+# 6. Rescale back to original means and sds
+X_rescaled <- sweep(X_correlated, 2, X_sd, "*")
+X_rescaled <- sweep(X_rescaled, 2, X_mean, "+")
+
+# 7. Convert to data frame
+df_correlated <- as.data.frame(X_rescaled)
+names(df_correlated) <- c("y1", "y2", "y3", "y4")
+
+
+y = unlist(df_correlated)
+
+# 8. Check correlations
+#round(cor(df_correlated), 2)
+
+
+###################################
 dates <- seq(from = as.Date("2000-01-01"), by = "month", length.out = 60)
 
 data = data.frame(
@@ -93,5 +134,40 @@ data = data.frame(
 
 
 write_delim(data, file = '~/dev/ml/data/sim.csv', delim = ',')
+##################################
+# Data for arimax with exogenous variables
+##################################
+dates <- seq(from = as.Date("2000-01-01"), by = "month", length.out = 60)
 
+x1 = as.vector(arima_sim(n = 60, ar = 0.2, ma = 0.01, beta = -0.6))
+x2 = as.vector(arima_sim(n = 60, ar = -0.1, ma = 0, beta = 0.5))
+x3 = rnorm(n = 60, 3, .5)
+y1 = 1+2*x1-3*x2 + rnorm(n = 60, 0, 30) 
+y2 = 2-0.8*x1 + rnorm(n = 60, 0, 1)
+
+d1 = data.frame(
+  ds = dates,
+  y = y1,
+  x1 = x1,
+  x2 = x2,
+  x3 = x3,
+  series_id = 'A1')
+
+
+
+d2 = data.frame(
+  ds = dates,
+  y = y2,
+  x1 = x1,
+  x2 = x2,
+  x3 = x3,
+  series_id = 'A2')
+
+
+
+sim_exo = bind_rows(d1, d2)
+
+  
+
+write_delim(sim_exo, file = '~/dev/ml/data/sim-exo.csv', delim = ',')
 
