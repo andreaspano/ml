@@ -16,8 +16,8 @@ Y_test_df = Y_df[Y_df.ds>'1959-12-31'] # 12 test
 
 # Fit and predict with NBEATS and NHITS models
 horizon = len(Y_test_df)
-models = [NBEATS(input_size=2 * horizon, h=horizon, max_steps=100, enable_progress_bar=False),
-          NHITS(input_size=2 * horizon, h=horizon, max_steps=100, enable_progress_bar=False)]
+models = [NBEATS(input_size=2 * horizon, h=horizon, max_steps=100, enable_progress_bar=True),
+          NHITS(input_size=2 * horizon, h=horizon, max_steps=100, enable_progress_bar=True)]
 nf = NeuralForecast(models=models, freq='ME')
 nf.fit(df=Y_train_df)
 Y_hat_df = nf.predict()

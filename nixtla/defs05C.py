@@ -26,9 +26,14 @@ from hierarchicalforecast.methods import MinTrace
 from plotnine import ggplot, aes, geom_line, facet_wrap 
 
 
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import Lasso
+
+
 # Prepare data
 # need to be arranged for each dataset 
-def prepare(df):
+def prepare(df, exog_vars = None):
     """
     Prepare input dataframe for hierarchical forecasting.
 
@@ -54,7 +59,7 @@ def prepare(df):
     ]
 
     # Aggregate series according to spec -> returns aggregated df, S matrix, and tags
-    df, S_df, tags = hf_aggregate(df=df, spec=spec)
+    df, S_df, tags = hf_aggregate(df=df, spec=spec, exog_vars = exog_vars)
 
     return df, S_df, tags
 
@@ -428,3 +433,38 @@ def plot_result(df, df_fct , df_tst, n_tail, total = False):
     )
 
     return(plt)
+
+
+
+
+##################################
+# Grid search lasso
+
+def select_x(y, X, cv, max_iter, random_state, scoring):
+
+    feature_names = X.columns
+
+    # Manual scaling before GridSearchCV (no pipeline)
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    param_grid = {"alpha": np.logspace(-3, 3, 100)}
+
+    grid = GridSearchCV(
+        Lasso(random_state=random_state, max_iter=max_iter),
+        param_grid,
+        cv=cv,
+        scoring=scoring,
+        n_jobs=-1
+    )
+
+    grid.fit(X_scaled, y)
+
+
+
+    # Extract best Lasso model
+    lasso = grid.best_estimator_
+    coef = [name for name, coef in zip(feature_names, lasso.coef_) if coef != 0]
+
+
+    return coef
