@@ -1,27 +1,39 @@
 import numpy as np
 
 from statsforecast import StatsForecast
-from statsforecast.models import AutoARIMA
+from statsforecast.models import AutoARIMA, AutoETS, HistoricAverage
 from statsforecast.utils import AirPassengersDF
-from siuba import group_by, summarize, _
+from siuba import group_by, summarize, filter,mutate, ungroup, arrange,  _
+
+from siuba.dply.vector import row_number, dense_rank
+
+from siuba.experimental.pivot import  pivot_longer
 from utilsforecast.losses import mape
-from plotnine import ggplot, aes, geom_line, facet_wrap, geom_density , geom_histogram
+from plotnine import ggplot, aes, geom_line, facet_wrap, geom_density , geom_histogram, geom_point, geom_linerange, element_blank, element_text, theme,  theme_bw, scale_x_continuous
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from statsmodels.stats.anova import anova_lm
 
 
 
 #Data
 df = AirPassengersDF
 
-M = AutoARIMA(season_length=12, alias = 'Arima') #Forecasting model 
+# Models
+M0 = HistoricAverage(alias = 'Mean')
+M1 = AutoARIMA(season_length=12, alias = 'Arima') #Forecasting model 
+M2 = AutoETS(season_length=12, alias = 'ETS')
+M = [M0, M1, M2]
+
 m = 12 #A minimum training size
 h = 12 #forecast horizon: h
 s = 1 #step size: s
 n = 12 #number of windows: n
-
+freq = 'ME' #frequency of data
 
 sf = StatsForecast(
-    models=[M],
-    freq='ME'
+    models=[M0, M1, M2],
+    freq=freq
 )
 
 #A starting point o: usually the origin
@@ -41,78 +53,106 @@ df_cv = sf.cross_validation(
     )
 
 
-def MAPE(y, yhat):
-    """
-    Mean Absolute Percentage Error avoiding division by zero.
-
-    Args:
-      y (array-like): actual values.
-      y_hat (array-like): predicted values.
-
-    Returns:
-      float: mean absolute percentage error computed only for y != 0.
-    """
-    mask = y != 0
-    return np.mean(np.abs((y[mask] - yhat[mask]) / y[mask]))
 
 
-
-
-
-
-
-df_mape = (df_cv
-    >> group_by(_.unique_id, _.cutoff)
-    >> summarize(mape = MAPE(_.y, _.Arima))
-    >> summarize(mape_avg = np.mean(_.mape), mape_sd = np.std(_.mape), mape_max = np.max(_.mape))
+df_cv = (df_cv
+    >> arrange(_.cutoff)
+    >> mutate(cutoff = dense_rank(_.cutoff))
 )
 
-df_mape
 
+# 
 
-p = (
-    ggplot(df_mape, aes(x="mape_avg"))
-    + geom_histogram(bins=20, fill="skyblue", color="black")
-    + labs(
-        title="Distribution of Average MAPE",
-        x="MAPE (average)",
-        y="Count"
+df_cv = (
+    df_cv
+    >> pivot_longer(
+        -_.unique_id, -_.ds, -_.cutoff, -_.y,
+        names_to="model",
+        values_to="yhat"
     )
-    + theme_bw()
+    >> mutate(ape = np.abs((_.y - _.yhat) / _.y)) 
 )
-p
 
 
-import numpy as np
-import pandas as pd
-from plotnine import ggplot, aes, geom_line, labs, theme_bw
+df_cv  = (
+    df_cv 
+    >> group_by(_.unique_id, _.model, _.cutoff) 
+    >> mutate(h = row_number(_.ds))
+    >> ungroup()
+)
 
-def plot_normal(mean, std, n_points=500):
-    """
-    Plot the normal distribution for a given mean and std using plotnine.
 
-    Args:
-        mean (float): Mean of the distribution.
-        std (float): Standard deviation of the distribution.
-        n_points (int): Number of points to plot.
-    Returns:
-        plotnine.ggplot object
-    """
-    x = np.linspace(mean - 4*std, mean + 4*std, n_points)
-    y = (1 / (std * np.sqrt(2 * np.pi))) * np.exp(-0.5 * ((x - mean) / std) ** 2)
-    df = pd.DataFrame({'x': x, 'density': y})
+mape_overall = (
+df_cv 
+    >> group_by(_.model)
+    >> summarize(overall_mape = np.mean(_.ape), include_groups = True)
+)
 
-    p = (
-        ggplot(df, aes(x="x", y="density"))
-        + geom_line(color="blue")
-        + labs(
-            title=f"Normal Distribution (mean={mean}, std={std})",
-            x="x",
-            y="Density"
+
+np.mean(df_cv['ape'])
+
+## fit linear model
+#model = smf.ols('ape ~ C(model) / C(model):C(h)', data=df_cv).fit()
+#anova_table = anova_lm(model, typ=2)
+#print(anova_table)
+
+# df for plotting h 
+df_plot_h = (df_cv 
+    >> group_by(_.model, _.h)
+    >> summarize(avg_ape = np.mean(_.ape), std_ape = np.std(_.ape), include_groups = True) 
+    >> mutate( min_ape = _.avg_ape - 2*_.std_ape, max_ape = _.avg_ape + 2*_.std_ape)
+    
+)
+
+# Plot APE by model and horizon
+(
+    ggplot(df_plot_h, aes(x='h', y='avg_ape', color='model')) 
+        + geom_point()  
+        + geom_line() 
+        + geom_linerange(aes( ymin='min_ape', ymax='max_ape'))
+        + scale_x_continuous(breaks = np.arange(1, h+1))
+        + facet_wrap('~model') 
+        + theme_bw() 
+        + theme(
+            #panel_grid = element_blank(),
+            legend_position = "bottom",
+            legend_text = element_text(size = 12),
+            legend_title = element_blank(),
+            axis_title_x = element_text(size = 16)
         )
-        + theme_bw()
-    )
-    return p
+)
 
-# Example usage:
-plot_normal(mean=0, std=1)
+
+# df for plotting h 
+df_plot_cutoff = (df_cv 
+    >> group_by(_.model, _.cutoff)
+    >> summarize(avg_ape = np.mean(_.ape), std_ape = np.std(_.ape), include_groups = True) 
+    >> mutate( min_ape = _.avg_ape - 2*_.std_ape, max_ape = _.avg_ape + 2*_.std_ape)
+    
+)
+
+# Plot APE by model and horizon
+(
+    ggplot(df_plot_cutoff, aes(x='cutoff', y='avg_ape', color='model')) 
+        + geom_point()  
+        + geom_line() 
+        + geom_linerange(aes( ymin='min_ape', ymax='max_ape'))
+        + scale_x_continuous(breaks = np.arange(1, n+1))
+        + facet_wrap('~model') 
+        + theme_bw() 
+        + theme(
+            #panel_grid = element_blank(),
+            legend_position = "bottom",
+            legend_text = element_text(size = 12),
+            legend_title = element_blank(),
+            axis_title_x = element_text(size = 16)
+        )
+)
+
+
+
+# ANOVA table
+#anova_table = anova_lm(model, typ=2)   # typ=2 = same logic as R's aov()
+#print(anova_table)
+
+
