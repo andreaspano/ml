@@ -9,7 +9,8 @@ from siuba.dply.vector import row_number, dense_rank
 
 from siuba.experimental.pivot import  pivot_longer
 from utilsforecast.losses import mape
-from plotnine import ggplot, aes, geom_line, facet_wrap, geom_density , geom_histogram, geom_point, geom_linerange, element_blank, element_text, theme,  theme_bw, scale_x_continuous
+#from plotnine import ggplot, aes, geom_line, facet_wrap, geom_density , geom_histogram, geom_point, geom_linerange, element_blank, element_text, theme,  theme_bw, scale_x_continuous, xlab, ylab
+from plotnine import *
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from statsmodels.stats.anova import anova_lm
@@ -89,12 +90,6 @@ df_cv
 )
 
 
-np.mean(df_cv['ape'])
-
-## fit linear model
-#model = smf.ols('ape ~ C(model) / C(model):C(h)', data=df_cv).fit()
-#anova_table = anova_lm(model, typ=2)
-#print(anova_table)
 
 # df for plotting h 
 df_plot_h = (df_cv 
@@ -105,7 +100,7 @@ df_plot_h = (df_cv
 )
 
 # Plot APE by model and horizon
-(
+pl1 = (
     ggplot(df_plot_h, aes(x='h', y='avg_ape', color='model')) 
         + geom_point()  
         + geom_line() 
@@ -113,14 +108,16 @@ df_plot_h = (df_cv
         + scale_x_continuous(breaks = np.arange(1, h+1))
         + facet_wrap('~model') 
         + theme_bw() 
+        + xlab('Forecast Horizon (h)') 
+        + ylab ('APE with 95% CI')
         + theme(
-            #panel_grid = element_blank(),
             legend_position = "bottom",
             legend_text = element_text(size = 12),
             legend_title = element_blank(),
             axis_title_x = element_text(size = 16)
         )
 )
+
 
 
 # df for plotting h 
@@ -132,27 +129,34 @@ df_plot_cutoff = (df_cv
 )
 
 # Plot APE by model and horizon
-(
+pl2 = (
     ggplot(df_plot_cutoff, aes(x='cutoff', y='avg_ape', color='model')) 
         + geom_point()  
         + geom_line() 
         + geom_linerange(aes( ymin='min_ape', ymax='max_ape'))
         + scale_x_continuous(breaks = np.arange(1, n+1))
-        + facet_wrap('~model') 
+        + facet_wrap('~model')
+        + xlab('Test Window') 
+        + ylab ('MAPE with 95% CI')
         + theme_bw() 
         + theme(
             #panel_grid = element_blank(),
             legend_position = "bottom",
             legend_text = element_text(size = 12),
             legend_title = element_blank(),
-            axis_title_x = element_text(size = 16)
+            axis_title = element_text(size = 16)
         )
 )
 
 
+ggsave("pl2.png", plot = pl2, width = 8, height = 6)  # adjust height as needed
 
 # ANOVA table
 #anova_table = anova_lm(model, typ=2)   # typ=2 = same logic as R's aov()
 #print(anova_table)
 
 
+## fit linear model
+#model = smf.ols('ape ~ C(model) / C(model):C(h)', data=df_cv).fit()
+#anova_table = anova_lm(model, typ=2)
+#print(anova_table)
