@@ -1,0 +1,43 @@
+---
+title: "Untitled"
+format: html
+---
+
+---
+title: "AI Cash Flow Forecasting"
+subtitle: "Proposta per UniCredit"
+author: "SDG Group"
+format: revealjs
+---
+
+## Slide 1 — Obiettivo del Progetto
+
+- Fornire una **visione completa del cash flow** aziendale integrando tutte le relazioni bancarie.  
+- Abilitare **previsioni affidabili** sui flussi futuri.  
+- Consentire **simulazioni di scenario (what-if)** per ottimizzare la liquidità.  
+
+---
+
+## Slide 2 — Approccio in 4 Fasi
+
+1. **Categorizzazione** dei movimenti bancari tramite LLM + regole di dominio.  
+2. **Classificazione rapida** di nuove banche e causali.  
+3. **Previsione (forecast)** dei flussi di cassa su serie storiche.  
+4. **Simulazioni what-if** per supportare decisioni di cash pooling e pianificazione.  
+
+---
+
+## Slide 3 — Fonti Dati Standard
+
+- **PSD2** e **CBI** coprono il 100% dei dati bancari necessari.  
+- Formati già **riconosciuti e consolidati** da banche e imprese italiane.  
+- Utilizzo di canali standard → riduzione della complessità per clienti e banca.  
+
+---
+
+## Slide 4 — Benefici per UniCredit
+
+- **Reportistica completa e affidabile** sulla posizione di cassa dei clienti.  
+- **Consulenza avanzata** su ottimizzazione liquidità e cash pooling.  
+- Rafforzamento del ruolo di UniCredit come **partner strategico** per le imprese.  
+- Prototipo scalabile con potenziale **industrializzazione rapida**.  
